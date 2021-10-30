@@ -19,37 +19,23 @@ const userSchema = new Schema({
 });
 
 userSchema.pre("save", async function (next) {
-    // const salt = await bcrypt.genSalt();
-    // this.password = await bcrypt.hash(this.password, salt);
-    // next();
-
-    const user = this;
-    if (user.isModified("password")) {
-        user.password = await bcrypt.hash(user.password, 8);
-    }
+    const salt = await bcrypt.genSalt();
+    this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
 userSchema.statics.login = async function (username, password) {
     const user = await this.findOne({ username });
-    // if (user) {
-    //     const auth = await bcrypt.compare(password, user.password);
-    //     if (auth) {
-    //         return user;
-    //     } else {
-    //         throw new Error("Wrong Password");
-    //     }
-    // } else {
-    //     throw new Error("This username doesnt exist");
-    // }
-    if (!user) {
-        throw new Error("Unable to Login");
+    if (user) {
+        const auth = await bcrypt.compare(password, user.password);
+        if (auth) {
+            return user;
+        } else {
+            throw Error("Wrong Password");
+        }
+    } else {
+        throw Error("This username doesnt exist");
     }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        throw new Error("Unable to Login");
-    }
-    return user;
 };
 
 module.exports = mongoose.model("User", userSchema);

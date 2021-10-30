@@ -7,8 +7,8 @@ const createToken = (id) => {
 };
 
 const login = async (req, res, next) => {
+    const { username, password } = req.body;
     try {
-        const { username, password } = req.body;
         const user = await User.login(username, password);
         const token = user.generate;
         res.cookie("cookie", token, { httpOnly: true, maxAge: maxAge * 1000 });
@@ -17,8 +17,9 @@ const login = async (req, res, next) => {
             user: user,
         });
     } catch (err) {
-        console.log("user");
-        res.status(400).send(err);
+        res.status(400).json({
+            error: err.message,
+        });
     }
 };
 
@@ -29,7 +30,7 @@ const register = async (req, res, next) => {
             username,
             password,
         });
-        res.send(user);
+        res.status(201).send(user);
     } catch (err) {
         if (err.code === 11000) {
             res.status(404).json({
